@@ -16,6 +16,10 @@
    myCity.get(myFun); */
   import {getSingerList} from 'api/singer'
   import {ERR_OK} from 'api/config'
+  import Singer from 'common/js/singer'
+
+  const HOT_NAME = '热门'
+  const HOT_SINGER_LEN = 10
   export default {
     data() {
       return {
@@ -26,12 +30,59 @@
       this._getSingerList()
     },
     methods: {
+      // 获取歌手列表
       _getSingerList() {
         getSingerList().then((res) => {
           if (res.code === ERR_OK) {
-            this.singers = res.data.list
+            this.singers = this._normalizeSinger(res.data.list)
           }
         })
+      },
+      // 将歌手列表处理成需要的数据结构
+      _normalizeSinger(singers) {
+        let map = {
+          hot: {
+            title: HOT_NAME,
+            items: []
+          }
+        }
+        // 只存放热门数据
+        singers.forEach((item, index) => {
+          if (index < HOT_SINGER_LEN) {
+            // 相同的对象结构可以定义一个类
+            map.hot.items.push(new Singer({
+              name: item.Fsinger_name,
+              id: item.Fsinger_mid
+            }))
+          }
+          // 按字母进行分类
+          const key = item.Findex
+          if (!map[key]) {
+            map[key] = {
+              title: key,
+              items: []
+            }
+          }
+          // 相同的对象结构可以定义一个类
+          map[key].items.push(new Singer({
+            name: item.Fsinger_name,
+            id: item.Fsinger_mid
+          }))
+        })
+        let hot = []
+        let ret = []
+        for (let key in map) {
+          let val = map[key]
+          if (val.title.match(/[a-zA-Z]/)) {
+            ret.push(val)
+          } else if (val.title === HOT_NAME) {
+            hot.push(val)
+          }
+        }
+        ret.sort((a, b) => {
+          return a.title.charCodeAt(0) - b.title.charCodeAt(0)
+        })
+        return hot.concat(ret)
       }
     }
   }
@@ -42,5 +93,5 @@
     position: fixed
     top: 88px
     bottom 0
-    width:100%
+    width: 100%
 </style>
