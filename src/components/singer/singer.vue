@@ -1,6 +1,9 @@
 <template>
   <div class="singer">
-    歌手页面
+    <list-view
+      @select="selectSinger"
+      :singers="singers"></list-view>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -17,6 +20,7 @@
   import {getSingerList} from 'api/singer'
   import {ERR_OK} from 'api/config'
   import Singer from 'common/js/singer'
+  import listView from 'base/listview/listview'
 
   const HOT_NAME = '热门'
   const HOT_SINGER_LEN = 10
@@ -30,6 +34,9 @@
       this._getSingerList()
     },
     methods: {
+      selectSinger(singer) {
+        this.$router.push(`/singer/${singer.id}`)
+      },
       // 获取歌手列表
       _getSingerList() {
         getSingerList().then((res) => {
@@ -84,6 +91,9 @@
         })
         return hot.concat(ret)
       }
+    },
+    components: {
+      listView
     }
   }
 </script>
